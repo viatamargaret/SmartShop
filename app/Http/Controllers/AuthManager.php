@@ -22,11 +22,15 @@ class AuthManager extends Controller
         ]);
 
         $credentials = $request->only('email', 'password');
-        if(Auth::attempt($credentials)){
-            return redirect()->intended(route('home'));
+        if (Auth::attempt($credentials)) {
+        $user = Auth::user();
+
+        if ($user->is_admin) {
+            return redirect()->route('admin.dashboard');
         }
-        return redirect('login')
-            ->with('error', 'Invalid Email or Password');
+
+        return redirect()->route('home');
+        }
     }
 
     function logout()

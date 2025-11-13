@@ -65,7 +65,8 @@
     <div class="auth-card">
         <form method="POST" action="{{ route('register.post') }}">
             @csrf
-            <img class="auth-logo" src="{{ asset('assets/img/smartshop.logo.svg')}}" alt="SmartShop Logo">
+            <img class="auth-logo" src="{{ asset('storage/products/products/logo.png') }}" alt="SmartShop Logo">
+            
             <h1 class="h4 mb-3 fw-bold text-center">Create Your Account</h1>
             <p class="text-muted text-center mb-4">Join SmartShop and start shopping smarter!</p>
 

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('message');
             $table->enum('sender', ['user','bot'])->default('user');
             $table->enum('language', ['English','Swahili'])->default('English');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
     }
 
