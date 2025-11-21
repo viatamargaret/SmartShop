@@ -21,15 +21,17 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Admin\MessageController as AdminMessageController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\MessageController;
 
-Route::get('/home', function () {
-    if (Auth::check() && Auth::user()->is_admin) {
-        return redirect()->route('admin.dashboard');
+Route::get('/', function () {
+    if (Auth::check()) {
+        return Auth::user()->is_admin
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('home');
     }
-    return app(\App\Http\Controllers\CustomerHomeController::class)->index();
-})->name('home');
+    return view('welcome');
+})->name('welcome');
 
 Route::get('/login', [AuthManager::class, 'login'])->name('login');
 Route::post('/login', [AuthManager::class, 'loginPost'])->name('login.post');
@@ -73,16 +75,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/chatbot/clear', [ChatbotController::class, 'clear'])->name('chatbot.clear');
 });
 
-Route::middleware(['auth', 'is_admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/profile', [AdminController::class, 'editProfile'])->name('admin.profile');
-    Route::post('/profile/update', [AdminController::class, 'updateProfile'])->name('admin.updateProfile');
+Route::middleware(['auth', 'is_admin'])->prefix('admin')->as('admin.')->group(function () {
 
-    Route::resource('/products', AdminProductController::class);
-    Route::resource('/categories', AdminCategoryController::class);
-    Route::resource('/users', AdminUserController::class);
-    Route::post('/users/{id}/deactivate', [AdminUserController::class, 'deactivate'])->name('users.deactivate');
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [AdminController::class, 'editProfile'])->name('profile');
+    Route::post('/profile/update', [AdminController::class, 'updateProfile'])->name('updateProfile');
 
-    Route::get('/messages', [AdminMessageController::class, 'index'])->name('admin.messages');
-    Route::post('/messages/reply/{id}', [AdminMessageController::class, 'reply'])->name('admin.reply');
+    Route::resource('/products', AdminProductController::class)->names('products');
+    Route::resource('/categories', AdminCategoryController::class)->names('categories');
+    Route::resource('/users', UserController::class)->names('users');
+    Route::post('/users/{id}/toggle', [UserController::class, 'toggleActive'])->name('users.toggle');
+
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages');
+    Route::post('/messages/reply/{message}', [MessageController::class, 'reply'])->name('messages.reply');
 });
+
+

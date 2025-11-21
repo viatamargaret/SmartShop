@@ -19,6 +19,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        
+    }
+
+    public function bind():void
+    {
+    //     $this->app->bind(
+    //         \App\Contracts\SomeInterface::class,
+    //         \App\Services\SomeService::class
+    //     );
     }
 }

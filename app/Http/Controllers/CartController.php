@@ -8,33 +8,34 @@ use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    /**
-     * Display the cart page.
-     */
     public function index()
     {
-        if (Auth::check()) {
-            // You can extend this later to merge user + guest carts
-            $cart = session()->get('cart', []);
-        } else {
-            $cart = session()->get('cart', []);
-        }
+        $rawCart = session()->get('cart', []);
 
-        $total = collect($cart)->sum(function ($item) {
-            return $item['price'] * $item['quantity'];
-        });
+        $cart = collect($rawCart)->mapWithKeys(function ($item, $key) {
+            $name = is_array($item) ? ($item['name'] ?? null) : ($item->name ?? null);
+            $price = is_array($item) ? ($item['price'] ?? null) : ($item->price ?? null);
+            $quantity = is_array($item) ? ($item['quantity'] ?? null) : ($item->quantity ?? null);
+            $image = is_array($item) ? ($item['image'] ?? null) : ($item->image ?? null);
 
-        return view('cart.index', compact('cart', 'total'));
+            return [
+                $key => [
+                    'name' => $name ?? 'Unknown Product',
+                    'price' => is_numeric($price) ? (float) $price : 0.0,
+                    'quantity' => is_numeric($quantity) ? (int) $quantity : 0,
+                    'image' => $image,
+                ],
+            ];
+        })->filter(fn ($item) => $item['quantity'] > 0)->toArray();
+
+        $total = collect($cart)->sum(fn ($item) => $item['price'] * $item['quantity']);
+
+        return view('cart.index', ['cart' => $cart, 'total' => $total]);
     }
-
-    /**
-     * Add a product to the cart.
-     */
     public function add($id)
     {
         $product = Product::findOrFail($id);
 
-        // Example: Add to session cart
         $cart = session()->get('cart', []);
         if(isset($cart[$id])) {
             $cart[$id]['quantity']++;
@@ -51,9 +52,6 @@ class CartController extends Controller
         return redirect()->back()->with('success', "{$product->name} added successfully to cart!");
     }
 
-    /**
-     * Update product quantity in the cart.
-     */
     public function updateCart(Request $request)
     {
         if ($request->id && $request->quantity) {
@@ -66,9 +64,6 @@ class CartController extends Controller
         return redirect()->back();
     }
 
-    /**
-     * Remove a product from the cart.
-     */
     public function removeFromCart(Request $request)
     {
         if ($request->id) {
@@ -83,9 +78,6 @@ class CartController extends Controller
         return redirect()->back();
     }
 
-    /**
-     * Clear the entire cart.
-     */
     public function clearCart()
     {
         session()->forget('cart');

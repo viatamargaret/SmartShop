@@ -2,12 +2,11 @@
 
 @section('content')
 <div class="container mt-5">
-    <div class="card shadow-lg border-0 rounded-3">
-        <div class="card-header bg-primary text-white text-center fw-bold">
-            🛒 Your Shopping Cart
-        </div>
+    <div class="card shadow-lg border-0 rounded-4 p-4">
         <div class="card-body">
-            @if(empty(session('cart')))
+            <h2 class="fw-bold text-center mb-4">🛒 Your Shopping Cart</h2>
+
+            @if(empty($cart))
                 <div class="text-center p-5">
                     <h5>Your cart is empty.</h5>
                     <a href="{{ route('products.index') }}" class="btn btn-outline-primary mt-3">
@@ -15,73 +14,66 @@
                     </a>
                 </div>
             @else
-                @php
-                    $cart = session('cart');
-                    $total = 0;
-                @endphp
-
-                <div class="table-responsive">
+                <div class="table-responsive mb-4">
                     <table class="table table-bordered align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th scope="col">Product</th>
-                                <th scope="col">Quantity</th>
-                                <th scope="col">Price</th>
-                                <th scope="col">Subtotal</th>
-                                <th scope="col" class="text-center">Action</th>
+                                <th>Product</th>
+                                <th>Price (Ksh)</th>
+                                <th>Quantity</th>
+                                <th>Subtotal (Ksh)</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($cart as $id => $item)
-                                @php
-                                    $subtotal = $item['price'] * $item['quantity'];
-                                    $total += $subtotal;
-                                @endphp
+                                @php $lineTotal = $item['price'] * $item['quantity']; @endphp
                                 <tr>
-                                    <td>{{ $item['name'] }}</td>
+                                    <td class="fw-semibold">{{ $item['name'] }}</td>
+                                    <td>{{ number_format($item['price'], 2) }}</td>
                                     <td>
-                                        <form action="{{ route('cart.update') }}" method="POST" class="d-flex justify-content-center align-items-center">
+                                        <form action="{{ route('cart.update') }}" method="POST" class="d-flex align-items-center">
                                             @csrf
                                             <input type="hidden" name="id" value="{{ $id }}">
-                                            <input type="number" name="quantity" value="{{ $item['quantity'] }}" min="1"
-                                                class="form-control text-center me-2" style="width: 80px;">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                                            <input type="number" name="quantity" value="{{ $item['quantity'] }}"
+                                                min="1" class="form-control form-control-sm me-2" style="width: 80px;">
+                                            <button type="submit" class="btn btn-outline-primary btn-sm">Update</button>
                                         </form>
                                     </td>
-                                    <td>Ksh {{ number_format($item['price'], 2) }}</td>
-                                    <td>Ksh {{ number_format($subtotal, 2) }}</td>
-                                    <td class="text-center">
-                                        <form action="{{ route('cart.remove') }}" method="POST" onsubmit="return confirm('Remove this item?')">
+                                    <td>{{ number_format($lineTotal, 2) }}</td>
+                                    <td>
+                                        <form action="{{ route('cart.remove') }}" method="POST"
+                                            onsubmit="return confirm('Remove this item?')">
                                             @csrf
                                             <input type="hidden" name="id" value="{{ $id }}">
-                                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">Remove</button>
                                         </form>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
-                        <tfoot class="fw-bold">
-                            <tr>
-                                <td colspan="3" class="text-end">Total:</td>
-                                <td colspan="2">Ksh {{ number_format($total, 2) }}</td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between mt-4">
+                <div class="card bg-light border-0 mb-4">
+                    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-center">
+                        <h5 class="mb-3 mb-md-0">Total: <strong>Ksh {{ number_format($total, 2) }}</strong></h5>
+                        <div>
+                            <a href="{{ route('cart.clear') }}" class="btn btn-outline-danger me-2"
+                               onclick="return confirm('Are you sure you want to clear the cart?')">
+                                Clear Cart
+                            </a>
+                            <a href="{{ route('checkout.index') }}" class="btn btn-primary">
+                                Proceed to Checkout →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end">
                     <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
                         ← Continue Shopping
                     </a>
-                    <div>
-                        <a href="{{ route('cart.clear') }}" class="btn btn-outline-danger me-2"
-                           onclick="return confirm('Are you sure you want to clear the cart?')">
-                            Clear Cart
-                        </a>
-                        <a href="{{ route('checkout.index') }}" class="btn btn-primary">
-                            Proceed to Checkout →
-                        </a>
-                    </div>
                 </div>
             @endif
         </div>

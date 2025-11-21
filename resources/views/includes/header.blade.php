@@ -1,6 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
     <div class="container">
-        {{-- Dynamic Greeting --}}
         <a class="navbar-brand d-flex align-items-center fw-bold text-primary" href="{{ route('home') }}">
             <span>
                 @auth

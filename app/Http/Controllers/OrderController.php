@@ -10,20 +10,17 @@ use Illuminate\Support\Facades\Session;
 
 class OrderController extends Controller
 {
-    // Show all orders for logged-in user
     public function index()
     {
         $orders = Order::where('user_id', Auth::id())->latest()->get();
         return view('orders.index', compact('orders'));
     }
 
-    // Checkout page (optional if using CheckoutController)
     public function checkout()
     {
         $cart = Session::get('cart', []);
         $total = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
-        // Cities and pickup points
         $cities = [
             'Nairobi' => ['Central Park', 'Westlands Mall', 'CBD PickUp Point'],
             'Mombasa' => ['Mombasa Mall', 'Nyali PickUp', 'Old Town PickUp'],
@@ -33,7 +30,6 @@ class OrderController extends Controller
         return view('checkout.index', compact('cart', 'total', 'cities'));
     }
 
-    // Place order
     public function placeOrder(Request $request)
     {
         $request->validate([
@@ -58,10 +54,8 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Your cart is empty.');
         }
 
-        // Calculate subtotal
         $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
-        // Delivery fee
         $deliveryFee = 0;
         if ($request->delivery_option === 'door') {
             $deliveryFees = [
@@ -72,24 +66,23 @@ class OrderController extends Controller
             $deliveryFee = $deliveryFees[$request->city] ?? 400;
         }
 
-        // Payment fee: COD only applies for door delivery
-        $paymentFee = ($request->payment_method === 'cod' && $request->delivery_option === 'door') ? 50 : 0;
+        $paymentFee = ($request->payment_method === 'cod' && $request->delivery_option === 'door') ? 100 : 0;
 
         $totalAmount = $subtotal + $deliveryFee + $paymentFee;
 
-        // Determine final delivery address
         $finalAddress = $request->delivery_option === 'door' ? $request->address : $request->pickup_point;
 
-        // Create order
         $order = Order::create([
             'user_id' => $user->id,
+            'subtotal' => $subtotal,
+            'delivery_fee' => $deliveryFee,
+            'cod_fee' => $paymentFee,
             'total_amount' => $totalAmount,
             'payment_method' => $request->payment_method,
             'address' => $finalAddress,
             'status' => 'Pending',
         ]);
 
-        // Add order items
         foreach ($cart as $id => $item) {
             OrderItem::create([
                 'order_id' => $order->id,
@@ -99,7 +92,6 @@ class OrderController extends Controller
             ]);
         }
 
-        // Clear cart
         Session::forget('cart');
 
         return redirect()->route('checkout.confirmation', $order->id)

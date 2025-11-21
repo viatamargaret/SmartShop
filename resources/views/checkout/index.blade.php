@@ -14,12 +14,10 @@
         @csrf
         <div class="row g-4">
 
-            <!-- Left Column: Delivery & Payment -->
             <div class="col-md-6">
                 <div class="card shadow-sm p-4">
                     <h5 class="mb-3">Delivery Details</h5>
 
-                    <!-- City -->
                     <div class="mb-3">
                         <label for="city" class="form-label">Select City</label>
                         <select name="city" id="city" class="form-select" required>
@@ -30,7 +28,6 @@
                         </select>
                     </div>
 
-                    <!-- Delivery Option -->
                     <div class="mb-3">
                         <label for="delivery_option" class="form-label">Delivery Option</label>
                         <select name="delivery_option" id="delivery_option" class="form-select" required>
@@ -39,7 +36,6 @@
                         </select>
                     </div>
 
-                    <!-- Pickup Point -->
                     <div class="mb-3" id="pickup_point_div" style="display:none;">
                         <label for="pickup_point" class="form-label">Select Pickup Point</label>
                         <select name="pickup_point" id="pickup_point" class="form-select">
@@ -47,13 +43,11 @@
                         </select>
                     </div>
 
-                    <!-- Address -->
                     <div class="mb-3" id="address_div">
                         <label for="address" class="form-label">Delivery Address</label>
                         <input type="text" name="address" id="address" class="form-control">
                     </div>
 
-                    <!-- Payment Method -->
                     <h5 class="mb-3 mt-4">Payment Method</h5>
                     <select name="payment_method" id="payment_method" class="form-select mb-3" required>
                         <option value="">-- Select Payment --</option>
@@ -62,13 +56,11 @@
                         <option value="card">Card Payment</option>
                     </select>
 
-                    <!-- M-Pesa -->
                     <div class="mb-3" id="mpesa_div" style="display:none;">
                         <label for="phone" class="form-label">M-Pesa Phone Number</label>
                         <input type="text" name="phone" id="phone" class="form-control">
                     </div>
 
-                    <!-- Card Payment -->
                     <div id="card_div" style="display:none;">
                         <div class="mb-3">
                             <label for="card_number" class="form-label">Card Number</label>
@@ -82,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- Right Column: Order Summary -->
             <div class="col-md-6">
                 <div class="card shadow-sm p-4">
                     <h5 class="mb-3">Order Summary</h5>
@@ -158,7 +149,7 @@ function updateFees() {
         pickupDiv.style.display = 'block';
     }
 
-    let paymentFee = (paymentMethod.value === 'cod' && deliveryOption.value === 'door') ? 50 : 0;
+    let paymentFee = paymentMethod.value === 'cod' ? 100 : 0;
 
     deliveryFeeText.innerHTML = `Delivery Fee: <strong>KSh ${deliveryFee}</strong>`;
     paymentFeeText.innerHTML = `Payment Fee: <strong>KSh ${paymentFee}</strong>`;

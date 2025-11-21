@@ -13,7 +13,7 @@
                             <div class="card-body text-center">
                                 <h5 class="fw-bold">{{ $category->name }}</h5>
                                 <p class="text-muted small">{{ Str::limit($category->description, 80) }}</p>
-                                <a href="{{ route('categories.show', $category->id) }}" class="btn btn-outline-primary btn-sm">
+                                <a href="{{ route('categories.show', $category->id) }}" class="btn btn-primary text-white">
                                     View Products
                                 </a>
                             </div>

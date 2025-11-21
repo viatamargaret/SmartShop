@@ -21,82 +21,133 @@
 @endsection
 
 @section('content')
-<div class="container orders-page">
-    <h2 class="mb-4 fw-bold text-center">📜 My Orders</h2>
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4 p-4">
+        <div class="card-body">
+            <h2 class="fw-bold mb-4 text-center">📜 My Orders</h2>
 
-    @if(session('success'))
-        <div class="alert alert-success text-center">{{ session('success') }}</div>
-    @endif
+            @if(session('success'))
+                <div class="alert alert-success text-center">{{ session('success') }}</div>
+            @endif
 
-    @if($orders->isEmpty())
-        <div class="text-center mt-5">
-            <h5>No orders found 🛍️</h5>
-            <a href="{{ route('home') }}" class="btn btn-primary mt-3">Start Shopping</a>
-        </div>
-    @else
-        @foreach($orders as $order)
-            <div class="card order-card shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="fw-bold mb-1">Order #{{ $order->id }}</h6>
-                            <p class="mb-1 text-muted">
-                                Total: <strong>Ksh {{ number_format($order->total_amount, 2) }}</strong>
-                            </p>
-                            <span class="badge 
-                                @if($order->status == 'Pending') bg-warning 
-                                @elseif($order->status == 'Delivered') bg-success 
-                                @elseif($order->status == 'Cancelled') bg-danger 
-                                @else bg-info 
-                                @endif">
-                                {{ ucfirst($order->status) }}
-                            </span>
-                        </div>
-                        <div class="text-end">
-                            <small class="text-muted">Placed on: {{ $order->created_at->format('M d, Y') }}</small>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <h6 class="fw-bold mb-2">🛒 Items Ordered:</h6>
-                    <ul class="list-unstyled">
-                        @foreach($order->items as $item)
-                            <li>
-                                {{ $item->product->name }} × {{ $item->quantity }} — 
-                                <strong>Ksh {{ number_format($item->price * $item->quantity, 2) }}</strong>
-                            </li>
-                        @endforeach
-                    </ul>
-
-                    <hr>
-
-                    {{-- Fees Breakdown --}}
-                    <div class="fee-details">
-                        <h6 class="fw-bold mb-2">💰 Order Summary</h6>
-                        <p>Subtotal: <span class="float-end">Ksh {{ number_format($order->subtotal ?? $order->total_amount - (($order->delivery_fee ?? 0) + ($order->service_fee ?? 0)), 2) }}</span></p>
-                        <p>Delivery Fee: <span class="float-end">Ksh {{ number_format($order->delivery_fee ?? 150, 2) }}</span></p>
-                        <p>Service Fee: <span class="float-end">Ksh {{ number_format($order->service_fee ?? 50, 2) }}</span></p>
-                        <hr>
-                        <p class="fw-bold">Grand Total: <span class="float-end text-success">Ksh {{ number_format($order->total_amount, 2) }}</span></p>
-                    </div>
-
-                    <hr>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-1"><strong>Delivery Address:</strong> {{ $order->address ?? 'Not specified' }}</p>
-                            <p class="mb-0"><strong>Payment Method:</strong> {{ ucfirst($order->payment_method ?? 'Cash on Delivery') }}</p>
-                        </div>
-                        <div>
-                            @if($order->status == 'Delivered')
-                                <a href="{{ route('orders.invoice', $order->id) }}" class="btn btn-outline-primary btn-sm">Download Invoice</a>
-                            @endif
-                        </div>
-                    </div>
+            {{-- If no orders --}}
+            @if($orders->isEmpty())
+                <div class="text-center mt-4">
+                    <h5>No orders found 🛍️</h5>
+                    <a href="{{ route('home') }}" class="btn btn-primary mt-3">Start Shopping</a>
                 </div>
-            </div>
-        @endforeach
-    @endif
+            @else
+
+                {{-- Orders Grid --}}
+                <div class="row g-4">
+                    @foreach($orders as $order)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body d-flex flex-column">
+
+                                    {{-- Header --}}
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-1">Order #{{ $order->id }}</h6>
+                                            <small class="text-muted">{{ $order->created_at->format('M d, Y') }}</small>
+                                        </div>
+
+                                        <span class="badge
+                                            @if($order->status === 'Pending') bg-warning
+                                            @elseif($order->status === 'Delivered') bg-success
+                                            @elseif($order->status === 'Cancelled') bg-danger
+                                            @else bg-info
+                                            @endif">
+                                            {{ ucfirst($order->status) }}
+                                        </span>
+                                    </div>
+
+                                    {{-- TOTAL --}}
+                                    <p class="mb-2 fw-semibold text-primary">
+                                        Total: Ksh {{ number_format($order->total_amount, 2) }}
+                                    </p>
+
+                                    {{-- ITEMS TABLE --}}
+                                    <div class="mb-3">
+                                        <h6 class="fw-bold">Items</h6>
+
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered align-middle">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Product</th>
+                                                        <th>Qty</th>
+                                                        <th>Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($order->items as $item)
+                                                        <tr>
+                                                            <td>{{ $item->product->name }}</td>
+                                                            <td>{{ $item->quantity }}</td>
+                                                            <td>Ksh {{ number_format($item->price * $item->quantity, 2) }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    {{-- SUMMARY --}}
+                                    <div class="bg-light rounded-3 p-3 mb-3">
+                                        <h6 class="fw-bold mb-2">Order Summary</h6>
+
+                                        @php
+                                            $deliveryFee = $order->delivery_fee ?? 0;
+                                            $codFee = $order->cod_fee ?? 0;
+                                            $subtotal = $order->subtotal ?? $order->total_amount - ($deliveryFee + $codFee);
+                                        @endphp
+
+                                        <p class="mb-1">
+                                            Subtotal
+                                            <span class="float-end">Ksh {{ number_format($subtotal, 2) }}</span>
+                                        </p>
+                                        <p class="mb-1">
+                                            Delivery Fee
+                                            <span class="float-end">Ksh {{ number_format($deliveryFee, 2) }}</span>
+                                        </p>
+                                        <p class="mb-2">
+                                            COD Fee
+                                            <span class="float-end">Ksh {{ number_format($codFee, 2) }}</span>
+                                        </p>
+                                        <p class="fw-bold mb-0">
+                                            Grand Total
+                                            <span class="float-end text-success">
+                                                Ksh {{ number_format($order->total_amount, 2) }}
+                                            </span>
+                                        </p>
+                                    </div>
+
+                                    <p class="mb-1">
+                                        <strong>Delivery:</strong>
+                                        {{ $order->address ?? 'Not specified' }}
+                                    </p>
+
+                                    <p class="mb-3">
+                                        <strong>Payment:</strong>
+                                        {{ ucfirst($order->payment_method ?? 'COD') }}
+                                    </p>
+
+                                    @if($order->status === 'Delivered')
+                                        <a href="{{ route('orders.invoice', $order->id) }}"
+                                           class="btn btn-outline-primary btn-sm mt-auto">
+                                            Download Invoice
+                                        </a>
+                                    @endif
+
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+            @endif
+        </div>
+    </div>
 </div>
 @endsection

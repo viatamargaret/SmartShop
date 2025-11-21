@@ -29,7 +29,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    // Relationships
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
     public function cart()
     {
         return $this->hasOne(Cart::class);

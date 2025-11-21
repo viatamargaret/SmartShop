@@ -3,76 +3,94 @@
 @section('title', 'Order Confirmation')
 
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
-            <div class="card shadow-lg border-0 rounded-4 p-4 text-center">
-                <div class="card-body">
-                    <h2 class="fw-bold text-success mb-3">🎉 Order Confirmed!</h2>
-                    <p class="text-muted mb-4">
-                        Thank you for shopping with <strong>SmartShop</strong>!  
-                        Your order has been successfully placed and is now being processed.
-                    </p>
+<div class="container mt-5 mb-5">
+    <div class="card shadow-sm p-4">
+        <h2 class="mb-4 text-center text-primary fw-bold">✅ Order Confirmation</h2>
 
-                    <div class="border rounded-4 p-4 text-start bg-light">
-                        <h5 class="fw-semibold mb-3 text-center">🧾 Order Details</h5>
-
-                        <p><strong>Order ID:</strong> #{{ $order->id }}</p>
-                        <p><strong>Total Amount:</strong> KSh {{ number_format($order->total_amount, 2) }}</p>
-                        <p><strong>Payment Method:</strong> {{ ucfirst($order->payment_method) }}</p>
-                        <p><strong>Status:</strong> 
-                            <span class="badge bg-info text-dark">{{ ucfirst($order->status) }}</span>
-                        </p>
-                        <p><strong>Delivery Address:</strong> {{ $order->address }}</p>
-
-                        <hr>
-
-                        <h5 class="fw-semibold mb-3 text-center">📦 Items Ordered</h5>
-                        <ul class="list-group">
-                            @foreach ($order->items as $item)
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>{{ $item->product->name }}</strong><br>
-                                        <small class="text-muted">Quantity: {{ $item->quantity }}</small>
-                                    </div>
-                                    <span>KSh {{ number_format($item->price * $item->quantity, 2) }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-
-                    <div class="mt-5 text-center">
-                        <a href="{{ route('products.index') }}" class="btn btn-primary px-4">🛍 Continue Shopping</a>
-                        <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary px-4">📜 View Orders</a>
-                    </div>
-
-                    <div class="mt-5 border-top pt-4">
-                        <h5 class="fw-semibold mb-3">⭐ Give Feedback</h5>
-
-                        @if(session('success'))
-                            <div class="alert alert-success">{{ session('success') }}</div>
-                        @endif
-
-                        <form action="{{ route('checkout.feedback', $order->id) }}" method="POST">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="rating" class="form-label">Rating (1-5)</label>
-                                <select name="rating" id="rating" class="form-select" required>
-                                    <option value="">-- Select Rating --</option>
-                                    @for($i = 1; $i <= 5; $i++)
-                                        <option value="{{ $i }}">{{ $i }} Star{{ $i > 1 ? 's' : '' }}</option>
-                                    @endfor
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="comment" class="form-label">Comment (optional)</label>
-                                <textarea name="comment" id="comment" class="form-control" rows="3"></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Submit Feedback</button>
-                        </form>
-                    </div>
-                </div>
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
             </div>
+        @endif
+
+        <p>Thank you, <strong>{{ Auth::user()->name }}</strong>! Your order has been placed successfully.</p>
+        <p>Order ID: <strong>#{{ $order->id }}</strong></p>
+        <p>Status: <strong>{{ ucfirst($order->status) }}</strong></p>
+
+        <hr>
+
+        <h4 class="mb-3">Order Summary</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty</th>
+                        <th>Price (KSh)</th>
+                        <th>Subtotal (KSh)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $subtotal = 0; @endphp
+                    @foreach ($order->items as $item)
+                        @php
+                            $lineTotal = $item->price * $item->quantity;
+                            $subtotal += $lineTotal;
+                        @endphp
+                        <tr>
+                            <td>{{ $item->product->name ?? 'Deleted Product' }}</td>
+                            <td>{{ $item->quantity }}</td>
+                            <td>{{ number_format($item->price, 2) }}</td>
+                            <td>{{ number_format($lineTotal, 2) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <p>Subtotal: <strong>KSh {{ number_format($subtotal, 2) }}</strong></p>
+
+            @if (!empty($order->delivery_fee))
+                <p>Delivery Fee: <strong>KSh {{ number_format($order->delivery_fee, 2) }}</strong></p>
+            @endif
+
+            @if (strtolower($order->payment_method) === 'cod')
+                <p>Cash on Delivery Fee: <strong>KSh 100</strong></p>
+            @endif
+
+            <hr>
+            <h5>Total Amount: <strong class="text-primary">KSh {{ number_format($order->total_amount, 2) }}</strong></h5>
+        </div>
+
+        <div class="mt-4">
+            <p><strong>Delivery Address:</strong> {{ $order->address ?? 'N/A' }}</p>
+            <p><strong>Payment Method:</strong> {{ strtoupper($order->payment_method) }}</p>
+        </div>
+
+        <hr>
+
+        <div class="mt-4">
+            <h4 class="text-primary fw-bold">⭐ Leave Feedback</h4>
+
+            <form action="{{ route('feedback.store', $order->id) }}" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Rating (1-5)</label>
+                    <input type="number" id="rating" name="rating" class="form-control" min="1" max="5" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Comment</label>
+                    <textarea id="comment" name="comment" class="form-control" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-success">Submit Feedback</button>
+            </form>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{{ route('home') }}" class="btn btn-outline-primary">🛍 Continue Shopping</a>
         </div>
     </div>
 </div>

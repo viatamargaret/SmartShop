@@ -5,20 +5,18 @@
 @section('content')
 <div class="container py-5">
 
-    {{-- Intro Section: Logo + Description Side-by-Side --}}
     <div class="card shadow-sm mb-4 p-4">
         <div class="row align-items-center">
-            {{-- Logo --}}
+
             <div class="col-md-4 text-center">
                 <img class="auth-logo mb-3" src="{{ asset('storage/products/products/logo.png') }}" alt="SmartShop Logo" width="180">
             </div>
 
-            {{-- Description --}}
             <div class="col-md-8">
                 <h2 class="fw-bold text-primary">Welcome to SmartShop</h2>
                 <p class="text-muted mt-3">
-                    SmartShop is your ultimate online shopping destination in Kenya. We bring you a wide range of high-quality products — from electronics, fashion, and groceries to home and beauty essentials — all in one convenient platform.  
-                    Enjoy a smooth, secure, and fast shopping experience with quick deliveries, easy returns, and excellent customer support.  
+                    SmartShop is your ultimate online shopping destination in Kenya. We bring you a wide range of high-quality products from electronics, fashion and groceries to home and beauty essentials, all in one convenient platform.  
+                    Enjoy a smooth, secure and fast shopping experience with quick deliveries, easy returns and excellent customer support.  
                     Whether you’re looking for daily items or exclusive deals, SmartShop is here to make your shopping smarter and simpler!
                 </p>
             </div>
@@ -27,10 +25,8 @@
 
     <div class="row g-4">
 
-        {{-- Left Column --}}
         <div class="col-lg-8">
 
-            {{-- Popular Products --}}
             <div class="card shadow-sm mb-4 p-3">
                 <h5 class="fw-semibold mb-3">🔥 Popular Products</h5>
                 <div class="row g-3">
@@ -54,7 +50,6 @@
                 </div>
             </div>
 
-            {{-- Recent Orders --}}
             <div class="card shadow-sm mb-4 p-3">
                 <h5 class="fw-semibold mb-3">📦 Most Recent Orders</h5>
                 @if($recentOrders->count() > 0)
@@ -71,7 +66,6 @@
                 @endif
             </div>
 
-            {{-- Reviews --}}
             <div class="card shadow-sm mb-4 p-3">
                 <h5 class="fw-semibold mb-3">💬 Customer Reviews</h5>
                 @foreach($reviews as $review)
@@ -92,10 +86,8 @@
 
         </div>
 
-        {{-- Right Column --}}
         <div class="col-lg-4">
 
-            {{-- Quick Access Buttons --}}
             <div class="card shadow-sm mb-4 p-3">
                 <h5 class="fw-semibold mb-3">⚡ Quick Access</h5>
                 <div class="d-grid gap-2">
@@ -107,15 +99,13 @@
                 </div>
             </div>
 
-            {{-- Profile Snapshot --}}
             <div class="card shadow-sm mb-4 p-3 text-center">
                 <h5 class="fw-semibold mb-3">👤 Your Profile</h5>
                 <p><strong>Name:</strong> {{ auth()->user()->name }}</p>
                 <p><strong>Email:</strong> {{ auth()->user()->email }}</p>
-                <a href="{{ route('profile.edit') }}" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+                <a href="{{ route('profile.edit') }}" class="btn btn-primary btn-sm mt-auto">Edit Profile</a>
             </div>
 
-            {{-- Company Contacts --}}
             <div class="card shadow-sm p-3">
                 <h5 class="fw-semibold mb-3">📞 Contact Us</h5>
                 <p><strong>Phone:</strong> +254 700 123456</p>

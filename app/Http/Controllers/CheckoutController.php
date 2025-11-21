@@ -16,7 +16,6 @@ class CheckoutController extends Controller
         $cart = Session::get('cart', []);
         $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
-        // Cities and pickup points
         $cities = [
             'Nairobi' => ['Central Park', 'Westlands Mall', 'CBD PickUp Point'],
             'Mombasa' => ['Mombasa Mall', 'Nyali PickUp', 'Old Town PickUp'],
@@ -35,9 +34,6 @@ class CheckoutController extends Controller
             'address' => 'nullable|string|max:500',
             'payment_method' => 'required|string',
             'phone' => 'nullable|string',
-            'card_number' => 'nullable|string',
-            'card_expiry' => 'nullable|string',
-            'card_cvv' => 'nullable|string',
         ]);
 
         $cart = Session::get('cart', []);
@@ -47,6 +43,7 @@ class CheckoutController extends Controller
 
         $subtotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
 
+        // Calculate delivery fee
         $deliveryFee = 0;
         if ($request->delivery_option === 'door') {
             $deliveryFees = [
@@ -57,32 +54,33 @@ class CheckoutController extends Controller
             $deliveryFee = $deliveryFees[$request->city] ?? 400;
         }
 
-        $paymentFee = ($request->payment_method === 'cod') ? 50 : 0;
+        // Include COD fee directly in total
+        $codFee = strtolower($request->payment_method) === 'cod' ? 100 : 0;
 
-        $totalAmount = $subtotal + $deliveryFee + $paymentFee;
+        $totalAmount = $subtotal + $deliveryFee + $codFee;
 
         $finalAddress = $request->delivery_option === 'door' ? $request->address : $request->pickup_point;
 
         $order = Order::create([
             'user_id' => Auth::id(),
-            'total_amount' => $totalAmount,
-            'payment_method' => $request->payment_method,
             'address' => $finalAddress,
+            'payment_method' => $request->payment_method,
+            'total_amount' => $totalAmount,
             'status' => 'Pending',
         ]);
 
-        foreach ($cart as $id => $item) {
+        foreach ($cart as $productId => $item) {
             $order->items()->create([
-                'product_id' => $id,
-                'quantity' => $item['quantity'],
+                'product_id' => $productId,
                 'price' => $item['price'],
+                'quantity' => $item['quantity'],
             ]);
         }
 
         Session::forget('cart');
 
         return redirect()->route('checkout.confirmation', $order->id)
-            ->with('success', 'Your order has been placed successfully!');
+                         ->with('success', 'Your order has been placed successfully!');
     }
 
     public function confirmation($id)
@@ -91,7 +89,12 @@ class CheckoutController extends Controller
         return view('checkout.confirmation', compact('order'));
     }
 
-     public function submitFeedback(Request $request, $orderId)
+    public function feedback()
+    {
+        return view('checkout.feedback');
+    }
+
+    public function submitFeedback(Request $request, $orderId)
     {
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
